@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Operation_229.Entities;
+using Operation_229.Helpers;
 using System;
 using System.IO;
 using System.Linq;
@@ -29,7 +30,6 @@ namespace Operation_229
                                                     TrustServerCertificate=False;
                                                     ApplicationIntent=ReadWrite;
                                                     MultiSubnetFailover=False");
-
             /*            optionsBuilder.UseSqlServer($@"Data Source=SportShop.mssql.somee.com;
                                                          Initial Catalog=AirplaneDB;
                                                          Integrated Security=False;
@@ -39,44 +39,17 @@ namespace Operation_229
         protected override void OnModelCreating(ModelBuilder modelBuilder) // initializer
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<Airplane>().HasData(new Airplane[]
-            {
-                new Airplane()
-                {
-                    ID= 1,
-                    Model = "Boeing 747",
-                    MaxPassangers = 700,
-                },
-                                new Airplane()
-                {
-                    ID= 2,
-                    Model = "Boeing A320",
-                    MaxPassangers = 750,
-                },
-            });
-            modelBuilder.Entity<Flight>().HasData(new Flight[]
-            {
-                new Flight()
-                {
-                    ID= 1,
-                    AirplaneID= 1,
-                    DepartureCity = "New York",
-                    DepartureTime = new DateTime(2023,2,12),
-                    ArrivalCity = "London",
-                    ArrivalTime = new DateTime(2023,2,13),
-                },
-                new Flight()
-                {
-                    ID= 2,
-                    AirplaneID= 2,
-                    DepartureCity = "Amsterdam",
-                    DepartureTime = new DateTime(2023,2,13),
-                    ArrivalCity = "London",
-                    ArrivalTime = new DateTime(2023,2,13),
-                },
-            });
+            modelBuilder.SeedAirplanes();
+            modelBuilder.SeedFlights();
             //modelBuilder.Entity<Airplane>().Property(a => a.Model).IsRequired().HasMaxLength(100);
             //modelBuilder.Entity<Flight>().HasKey(s => s.ID); // primary key
+            modelBuilder.Entity<Flight>().
+                HasMany(f => f.clients).
+                WithMany(c => c.flights);
+            modelBuilder.Entity<Flight>().
+                HasOne(f => f.airplanes).
+                WithMany(a => a.flights).
+                HasForeignKey(f => f.AirplaneID);
         }
     }
 }
